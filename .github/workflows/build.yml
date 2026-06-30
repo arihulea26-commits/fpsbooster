@@ -9,16 +9,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
       - name: Build app
         run: |
-          swift build -c release
+          xcodebuild -project PerfBooster.xcodeproj -scheme PerfBooster -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
 
       - name: Package as IPA
         run: |
-          mkdir -p Payload/PerfBooster.app
-          cp .build/release/PerfBooster Payload/PerfBooster.app/PerfBooster
-          cd Payload
-          zip -r ../PerfBooster.ipa PerfBooster.app
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/PerfBooster.app Payload/
+          zip -r PerfBooster.ipa Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
